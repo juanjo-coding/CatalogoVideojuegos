@@ -1,16 +1,43 @@
-package org.example
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.createDirectories
+import kotlin.io.path.createDirectory
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.walk
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 fun main() {
-    val name = "Kotlin"
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    println("Hello, " + name + "!")
+    val carpetaDatos = Path.of("datos")
+    val carpetaDatosIniciales = Path.of("datos", "datos_ini")
+    val carpetaDatosFinales = Path.of("datos", "datos_fin")
 
-    for (i in 1..5) {
-        //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-        // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        println("i = $i")
+    println("CREACION DE RUTAS PROYECTO\nCreando rutas...")
+
+    if (!carpetaDatosIniciales.exists()) {
+        println("Creación de ruta para DATOS_INI")
+        carpetaDatosIniciales.createDirectories()
+    }
+    if (!carpetaDatosFinales.exists()) {
+        println("Creación de ruta para DATOS_FIN")
+        carpetaDatosFinales.createDirectories()
+    }
+
+    println("MOSTRANDO ESTRUCTURA DE DIRECTORIOS Y FICHEROS")
+
+    val ficheroVideojuegos = Path.of("datos/datos_ini/videojuegos.csv")
+
+    Files.walk(carpetaDatos).use { stream ->
+        stream.sorted().forEach { path ->
+            val profundidad = path.nameCount - carpetaDatos.nameCount
+            val indentacion = " ".repeat(profundidad + 1)
+
+            if (Files.isDirectory(path)) {
+                println("$indentacion[DIR] ${path.fileName}")
+            } else {
+                println("$indentacion[FILE] ${path.fileName}")
+            }
+        }
     }
 }
+
