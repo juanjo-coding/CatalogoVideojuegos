@@ -3,6 +3,9 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 
 class VideojuegoRepository(private val rutaCSV: Path = Path.of("datos", "datos_ini", "videojuegos.csv")) {
 
@@ -62,5 +65,20 @@ class VideojuegoRepository(private val rutaCSV: Path = Path.of("datos", "datos_i
         } catch (e: Exception) {
             println("Error al escribir el fichero CSV: ${e.message}")
         }
+    }
+
+    fun leerVideojuegosXML(ruta: Path): List<Videojuego> {
+        var contenedor = VideojuegosXML(emptyList())
+
+        if (!Files.isReadable(ruta)) {
+            println("ERROR: No se puede leer el fichero de la ruta: $ruta")
+        } else {
+            val fichero = ruta.toFile()
+            val xmlMapper = XmlMapper().registerKotlinModule()
+
+            contenedor = xmlMapper.readValue(fichero)
+            println("--- Informacion leida con exito de: $ruta")
+        }
+        return contenedor.listaVideojuegos
     }
 }

@@ -46,6 +46,7 @@ fun mostrarMenuPrincipal(service: VideojuegoService, repository: VideojuegoRepos
     do {
         println("\n===== CATALOGO DE VIDEOJUEGOS =====")
         println("1. Gestion CSV")
+        println("2. Leer catalogo desde XML")
         println("0. Salir")
         println("====================================")
         print("Elige una opcion: ")
@@ -55,6 +56,10 @@ fun mostrarMenuPrincipal(service: VideojuegoService, repository: VideojuegoRepos
         when (opcion) {
             1 -> {
                 mostrarMenuCSV(service, repository)
+            }
+
+            2 -> {
+                mostrarCatalogoXML(service, repository)
             }
 
             0 -> println("\nSaliendo del programa...")
@@ -128,3 +133,32 @@ fun mostrarMenuCSV(service: VideojuegoService, repository: VideojuegoRepository)
         }
     } while (opcion != 0)
 }
+
+fun mostrarCatalogoXML(service: VideojuegoService, repository: VideojuegoRepository) {
+    val rutaXML = Path.of("datos", "datos_ini", "videojuegos.xml")
+    val videojuegosXML = repository.leerVideojuegosXML(rutaXML)
+
+    if (videojuegosXML.isEmpty()) {
+        println("No se han podido leer videojuegos del XML.")
+        return
+    }
+
+    println("\n--- Videojuegos del fichero XML ---")
+    service.listarVideojuegos(videojuegosXML)
+
+    val catalogoActual = repository.leerTodos()
+    var nuevos = 0
+
+    for (juego in videojuegosXML) {
+        val yaExiste = catalogoActual.find { it.id == juego.id } != null
+        if (!yaExiste) {
+            catalogoActual.add(juego)
+            nuevos++
+        }
+    }
+
+    println("\nVideojuegos nuevos integrados: $nuevos")
+    repository.guardarTodos(catalogoActual)
+}
+
+
