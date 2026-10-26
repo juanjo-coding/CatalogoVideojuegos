@@ -6,5 +6,6 @@ data class Videojuego(
     val titulo: String,
     val genero: String,
     val anio: Int,
-    var nota: Double
+    val nota: Double
 )
+

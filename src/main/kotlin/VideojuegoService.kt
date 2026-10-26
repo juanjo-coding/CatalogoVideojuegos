@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.Path
+
 class VideojuegoService {
 
     fun listarVideojuegos(lista: List<Videojuego>) {
@@ -32,10 +35,10 @@ class VideojuegoService {
         println("ID asignado automaticamente: $nuevoId")
 
         print("Introduce el titulo: ")
-        val titulo = readlnOrNull()?.trim().orEmpty()
+        val titulo = readlnOrNull()?.trim() ?: ""
 
         print("Introduce el genero: ")
-        val genero = readlnOrNull()?.trim().orEmpty()
+        val genero = readlnOrNull()?.trim() ?: ""
 
         print("Introduce el anio: ")
         val anio = readlnOrNull()?.toIntOrNull()
@@ -65,14 +68,20 @@ class VideojuegoService {
             return lista
         }
 
-        val videojuego = lista.find { it.id == id }
-        if (videojuego == null) {
-            println("ERROR: No existe ningun videojuego con el ID: $id")
-            return lista
+        var encontrado = false
+        for (i in 0 until lista.size) {
+            if (lista[i].id == id) {
+                lista[i] = lista[i].copy(nota = nuevaNota)
+                println("Nota del videojuego ${lista[i].titulo} actualizada a $nuevaNota.")
+                encontrado = true
+                break
+            }
         }
 
-        videojuego.nota = nuevaNota
-        println("Nota del videojuego ${videojuego.titulo} actualizada a $nuevaNota.")
+        if (!encontrado) {
+            println("ERROR: No existe ningun videojuego con el ID: $id")
+        }
+
         return lista
     }
 
@@ -84,8 +93,8 @@ class VideojuegoService {
             return lista
         }
 
-        print("¿Estas seguro de que deseas eliminar '${videojuego.titulo}'? (s/n): ")
-        val confirmacion = readlnOrNull()?.trim()?.lowercase()
+        print("Estas seguro de que deseas eliminar '${videojuego.titulo}'? (s/n): ")
+        val confirmacion = readlnOrNull()?.trim()?.lowercase() ?: ""
 
         if (confirmacion == "s" || confirmacion == "si") {
             lista.remove(videojuego)
@@ -95,5 +104,34 @@ class VideojuegoService {
         }
 
         return lista
+    }
+
+
+    fun convertir(
+        origen: Path,
+        destino: Path,
+        leer: (Path) -> List<Videojuego>,
+        escribir: (Path, List<Videojuego>) -> Unit
+    ) {
+        if (!Files.exists(origen)) {
+            println("Error: El fichero origen no existe en la ruta: $origen")
+            return
+        }
+
+        try {
+            val videojuegos = leer(origen)
+            if (videojuegos.isEmpty()) {
+                println("Aviso: No se han encontrado registros para convertir en: $origen")
+                return
+            }
+
+            escribir(destino, videojuegos)
+
+            println("\n--- Conversion realizada con exito ---")
+            println("Fichero generado: $destino")
+            println("Numero de registros convertidos: ${videojuegos.size}")
+        } catch (e: Exception) {
+            println("Error durante la conversion: ${e.message}")
+        }
     }
 }
