@@ -6,6 +6,7 @@ import java.nio.file.Path
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import kotlinx.serialization.json.Json
 
 class VideojuegoRepository(private val rutaCSV: Path = Path.of("datos", "datos_ini", "videojuegos.csv")) {
 
@@ -80,5 +81,18 @@ class VideojuegoRepository(private val rutaCSV: Path = Path.of("datos", "datos_i
             println("--- Informacion leida con exito de: $ruta")
         }
         return contenedor.listaVideojuegos
+    }
+
+    fun leerVideojuegosJSON(ruta: Path): List<Videojuego> {
+        var videojuegos: List<Videojuego> = emptyList()
+
+        if (!Files.isReadable(ruta)) {
+            println("ERROR: No se puede leer el fichero de la ruta: $ruta")
+        } else {
+            val jsonString = Files.readString(ruta)
+            videojuegos = Json.decodeFromString<List<Videojuego>>(jsonString)
+            println("--- Informacion leida con exito de: $ruta")
+        }
+        return videojuegos
     }
 }

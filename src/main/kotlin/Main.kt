@@ -47,6 +47,7 @@ fun mostrarMenuPrincipal(service: VideojuegoService, repository: VideojuegoRepos
         println("\n===== CATALOGO DE VIDEOJUEGOS =====")
         println("1. Gestion CSV")
         println("2. Leer catalogo desde XML")
+        println("3. Leer catalogo desde JSON")
         println("0. Salir")
         println("====================================")
         print("Elige una opcion: ")
@@ -60,6 +61,10 @@ fun mostrarMenuPrincipal(service: VideojuegoService, repository: VideojuegoRepos
 
             2 -> {
                 mostrarCatalogoXML(service, repository)
+            }
+
+            3 -> {
+                mostrarCatalogoJSON(service, repository)
             }
 
             0 -> println("\nSaliendo del programa...")
@@ -147,18 +152,41 @@ fun mostrarCatalogoXML(service: VideojuegoService, repository: VideojuegoReposit
     service.listarVideojuegos(videojuegosXML)
 
     val catalogoActual = repository.leerTodos()
-    var nuevos = 0
+    val nuevos = integrarCatalogo(catalogoActual, videojuegosXML)
 
-    for (juego in videojuegosXML) {
+    println("\nVideojuegos nuevos integrados: $nuevos")
+    repository.guardarTodos(catalogoActual)
+}
+
+fun mostrarCatalogoJSON(service: VideojuegoService, repository: VideojuegoRepository) {
+    val rutaJSON = Path.of("datos", "datos_ini", "videojuegos.json")
+    val videojuegosJSON = repository.leerVideojuegosJSON(rutaJSON)
+
+    if (videojuegosJSON.isEmpty()) {
+        println("El JSON esta vacio.")
+        return
+    }
+
+    println("\n--- Videojuegos del fichero JSON ---")
+    service.listarVideojuegos(videojuegosJSON)
+
+    val catalogoActual = repository.leerTodos()
+    val nuevos = integrarCatalogo(catalogoActual, videojuegosJSON)
+
+    println("\nVideojuegos nuevos integrados: $nuevos")
+    repository.guardarTodos(catalogoActual)
+}
+
+fun integrarCatalogo(catalogoActual: MutableList<Videojuego>, nuevosVideojuegos: List<Videojuego>): Int {
+    var nuevos = 0
+    for (juego in nuevosVideojuegos) {
         val yaExiste = catalogoActual.find { it.id == juego.id } != null
         if (!yaExiste) {
             catalogoActual.add(juego)
             nuevos++
         }
     }
-
-    println("\nVideojuegos nuevos integrados: $nuevos")
-    repository.guardarTodos(catalogoActual)
+    return nuevos
 }
 
 
