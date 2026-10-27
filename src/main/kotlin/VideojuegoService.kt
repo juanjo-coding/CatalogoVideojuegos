@@ -8,29 +8,28 @@ class VideojuegoService {
             println("No hay videojuegos disponibles en el catalogo.")
         } else {
             println("\n--- Lista de Videojuegos ---")
-            for (juego in lista) {
-                println("ID: ${juego.id} | Titulo: ${juego.titulo} | Genero: ${juego.genero} | Anio: ${juego.anio} | Nota: ${juego.nota}")
+            for (videojuego in lista) {
+                println("ID: ${videojuego.id} | Titulo: ${videojuego.titulo} | Genero: ${videojuego.genero} | Anio: ${videojuego.anio} | Nota: ${videojuego.nota}")
             }
         }
     }
 
     fun buscarPorId(lista: List<Videojuego>, id: Int) {
-        val juego = lista.find { it.id == id }
+        val videojuego = lista.find { it.id == id }
 
-        if (juego != null) {
+        if (videojuego != null) {
             println("\n--- Videojuego Encontrado ---")
-            println("ID: ${juego.id}")
-            println("Titulo: ${juego.titulo}")
-            println("Genero: ${juego.genero}")
-            println("Anio: ${juego.anio}")
-            println("Nota: ${juego.nota}")
+            println("ID: ${videojuego.id}")
+            println("Titulo: ${videojuego.titulo}")
+            println("Genero: ${videojuego.genero}")
+            println("Anio: ${videojuego.anio}")
+            println("Nota: ${videojuego.nota}")
         } else {
             println("No existe ningun videojuego con el ID: $id")
         }
     }
 
     fun anyadirVideojuego(lista: MutableList<Videojuego>): MutableList<Videojuego> {
-
         val nuevoId = if (lista.isEmpty()) 1 else (lista.maxOf { it.id } + 1)
         println("ID asignado automaticamente: $nuevoId")
 
@@ -106,7 +105,6 @@ class VideojuegoService {
         return lista
     }
 
-
     fun convertir(
         origen: Path,
         destino: Path,
@@ -132,6 +130,136 @@ class VideojuegoService {
             println("Numero de registros convertidos: ${videojuegos.size}")
         } catch (e: Exception) {
             println("Error durante la conversion: ${e.message}")
+        }
+    }
+
+    fun importarFicheroBinario(repository: VideojuegoRepository) {
+        val rutaCSV = Path.of("datos", "datos_ini", "videojuegos.csv")
+        val lista = repository.leerCSV(rutaCSV)
+        if (lista.isEmpty()) {
+            println("No se han encontrado datos en: $rutaCSV")
+            return
+        }
+        repository.importarABinario(lista)
+        println("Datos importados al fichero binario con exito.")
+    }
+
+    fun leerFicheroBinario(repository: VideojuegoRepository) {
+        val lista = repository.leerBinario()
+        if (lista.isEmpty()) {
+            println("El fichero binario esta vacio o no existe.")
+        } else {
+            println("\n--- Catalogo desde Fichero BIN ---")
+            listarVideojuegos(lista)
+        }
+    }
+
+    fun anyadirRegistroBinario(repository: VideojuegoRepository) {
+        var id: Int? = null
+        while (id == null) {
+            print("Introduce el ID: ")
+            val num = readlnOrNull()?.trim()?.toIntOrNull()
+            if (num == null) {
+                println("ERROR: El ID debe ser un numero entero.")
+            } else if (repository.buscarPorIdBinario(num) != null) {
+                println("ERROR: El ID $num ya existe en el fichero binario.")
+            } else {
+                id = num
+            }
+        }
+
+        print("Introduce el titulo: ")
+        val titulo = readlnOrNull()?.trim() ?: ""
+
+        print("Introduce el genero: ")
+        val genero = readlnOrNull()?.trim() ?: ""
+
+        var anio: Int? = null
+        while (anio == null) {
+            print("Introduce el anio: ")
+            val num = readlnOrNull()?.trim()?.toIntOrNull()
+            if (num == null) {
+                println("ERROR: El anio debe ser un numero entero.")
+            } else {
+                anio = num
+            }
+        }
+
+        var nota: Double? = null
+        while (nota == null) {
+            print("Introduce la nota [0.0 - 10.0]: ")
+            val num = readlnOrNull()?.trim()?.toDoubleOrNull()
+            if (num == null || num !in 0.0..10.0) {
+                println("ERROR: La nota debe estar entre 0.0 y 10.0.")
+            } else {
+                nota = num
+            }
+        }
+
+        val nuevo = Videojuego(id, titulo, genero, anio, nota)
+        repository.anadirBinario(nuevo)
+    }
+
+    fun modificarRegistroBinario(repository: VideojuegoRepository) {
+        var id: Int? = null
+        while (id == null) {
+            print("Introduce el ID del videojuego a modificar: ")
+            val num = readlnOrNull()?.trim()?.toIntOrNull()
+            if (num == null) {
+                println("ERROR: El ID debe ser un numero entero.")
+            } else {
+                id = num
+            }
+        }
+
+        val videojuego = repository.buscarPorIdBinario(id)
+        if (videojuego == null) {
+            println("No existe ningun videojuego con el ID: $id")
+            return
+        }
+
+        println("Videojuego encontrado: ${videojuego.titulo}")
+
+        var nuevaNota: Double? = null
+        while (nuevaNota == null) {
+            print("Introduce la nueva nota [0.0 - 10.0]: ")
+            val num = readlnOrNull()?.trim()?.toDoubleOrNull()
+            if (num == null || num !in 0.0..10.0) {
+                println("ERROR: La nota debe estar entre 0.0 y 10.0.")
+            } else {
+                nuevaNota = num
+            }
+        }
+
+        repository.modificarNotaBinario(id, nuevaNota)
+    }
+
+    fun eliminarRegistroBinario(repository: VideojuegoRepository) {
+        var id: Int? = null
+        while (id == null) {
+            print("Introduce el ID del videojuego a eliminar: ")
+            val num = readlnOrNull()?.trim()?.toIntOrNull()
+            if (num == null) {
+                println("ERROR: El ID debe ser un numero entero.")
+            } else {
+                id = num
+            }
+        }
+
+        val videojuego = repository.buscarPorIdBinario(id)
+        if (videojuego == null) {
+            println("No existe ningun videojuego con el ID: $id")
+            return
+        }
+
+        println("Videojuego encontrado: ${videojuego.titulo}")
+        print("Estas seguro de que deseas eliminar '${videojuego.titulo}'? (s/n): ")
+        val confirmacion = readlnOrNull()?.trim()?.lowercase() ?: ""
+
+        if (confirmacion == "s" || confirmacion == "si") {
+            repository.eliminarBinario(id)
+        } else {
+            println("Operacion cancelada. No se ha eliminado el videojuego.")
         }
     }
 }

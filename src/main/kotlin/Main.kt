@@ -47,6 +47,7 @@ fun mostrarMenuPrincipal(service: VideojuegoService, repository: VideojuegoRepos
         println("2. Leer catalogo desde XML")
         println("3. Leer catalogo desde JSON")
         println("4. Conversiones entre formatos")
+        println("5. Gestion fichero BIN")
         println("0. Salir")
         println("====================================")
         print("Elige una opcion: ")
@@ -68,6 +69,10 @@ fun mostrarMenuPrincipal(service: VideojuegoService, repository: VideojuegoRepos
 
             4 -> {
                 mostrarMenuConversion(service, repository)
+            }
+
+            5 -> {
+                mostrarMenuBinario(service, repository)
             }
 
             0 -> println("\nSaliendo del programa...")
@@ -95,7 +100,7 @@ fun mostrarMenuCSV(service: VideojuegoService, repository: VideojuegoRepository)
         when (opcion) {
             1 -> service.listarVideojuegos(videojuegos)
             2 -> {
-                print("Introduce el ID del videojuego a buscar:")
+                print("Introduce el ID del videojuego a buscar: ")
                 val id = readlnOrNull()?.toIntOrNull()
                 if (id != null) {
                     service.buscarPorId(videojuegos, id)
@@ -125,7 +130,7 @@ fun mostrarMenuCSV(service: VideojuegoService, repository: VideojuegoRepository)
             }
 
             5 -> {
-                println("Introduce el ID del videojuego a eliminar:")
+                println("Introduce el ID del videojuego a eliminar: ")
                 val id = readlnOrNull()?.toIntOrNull()
 
                 if (id != null) {
@@ -182,16 +187,15 @@ fun mostrarCatalogoJSON(service: VideojuegoService, repository: VideojuegoReposi
 
 fun integrarCatalogo(catalogoActual: MutableList<Videojuego>, nuevosVideojuegos: List<Videojuego>): Int {
     var nuevos = 0
-    for (juego in nuevosVideojuegos) {
-        val yaExiste = catalogoActual.find { it.id == juego.id } != null
+    for (videojuego in nuevosVideojuegos) {
+        val yaExiste = catalogoActual.find { it.id == videojuego.id } != null
         if (!yaExiste) {
-            catalogoActual.add(juego)
+            catalogoActual.add(videojuego)
             nuevos++
         }
     }
     return nuevos
 }
-
 
 fun mostrarMenuConversion(service: VideojuegoService, repository: VideojuegoRepository) {
     val origenCSV = Path.of("datos", "datos_ini", "videojuegos.csv")
@@ -266,5 +270,30 @@ fun mostrarMenuConversion(service: VideojuegoService, repository: VideojuegoRepo
     } while (opcion != 0)
 }
 
+fun mostrarMenuBinario(service: VideojuegoService, repository: VideojuegoRepository) {
+    var opcion: Int
 
+    do {
+        println("\n===== CRUD fichero BIN =====")
+        println("1. Importar informacion de un fichero de intercambio.")
+        println("2. Leer informacion del fichero binario.")
+        println("3. Anyadir un registro nuevo")
+        println("4. Modificar un registro existente (por ID)")
+        println("5. Eliminar un registro existente (por ID)")
+        println("0. Volver")
+        println("=============================")
+        print("Elige una opcion: ")
 
+        opcion = readlnOrNull()?.toIntOrNull() ?: -1
+
+        when (opcion) {
+            1 -> service.importarFicheroBinario(repository)
+            2 -> service.leerFicheroBinario(repository)
+            3 -> service.anyadirRegistroBinario(repository)
+            4 -> service.modificarRegistroBinario(repository)
+            5 -> service.eliminarRegistroBinario(repository)
+            0 -> println("\nVolviendo al menu principal...")
+            else -> println("\nOpcion no valida.")
+        }
+    } while (opcion != 0)
+}
